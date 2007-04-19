@@ -1,0 +1,137 @@
+ActsAsTranslatable
+==================
+
+  Author: Andriy T. Yanko <andriy.yanko@gmail.com>
+  Created at: Mon Oct 30 16:25:43 EET 2006
+
+
+== About
+This plugin allows you to make any model transparent translatable.
+For every translatable model Thing he creates corresponding model TranslationThing.
+TranslationThing has all fields from Thing, which you what translate three
+  id
+  model_id
+  language
+For translation he use LEFT OUTE JOIN and COALESCE functions of database. So your
+database must support this if you want you this.
+
+== Configure
+
+  Set base language for models in environment:
+  TranslationLanguage.base = :en
+
+== Examples
+
+  # models
+  class Product < ActiveRecord::Base
+    acts_as_translatable :fields => [:name, :description]
+    belongs :section
+  end
+
+  class Section < ActiveRecord::Base
+    acts_as_translatable :fields => [:name]
+    has_many :products
+  end
+  
+  # Plugin create automatic tranlation models for Product and Section:
+  class TranslationProduct < ActiveRecord::Base
+    belongs_to :product, :foreign_key => :model_id
+  end
+
+  class TranslationSection < ActiveRecord::Base
+    belongs_to :section, :foreign_key => :model_id
+  end
+
+  # He adds also dynamicly  has_many associations for Product and Section:
+  class Product < ActiveRecord::Base
+    has_many :translation_products, :foreign_key => :model_id
+  end
+
+  class Section < ActiveRecord::Base
+    has_many :translation_sections, :foreign_key => :model_id
+  end
+  
+  TranslationLanguage.current = :de
+  p = Product.find(1)
+
+  # p.name p.description values will be in German if translation exists else it will be 
+  # values in English language (TranslationLanguage.base = :en)
+  
+  # If you want to get Productwithout auto-translated values use:
+  product = Product.find_untranslated(1)
+  
+  # All translations for product is available with
+  product.translation_products
+  
+  TranslationLanguage.disable
+  TranslationLanguage.current = :de
+  p = Product.find :first
+  p.name = "English name" # => "English name"
+  p.save
+  TranslationLanguage.enable
+  p.name = "Deutsche Name" # => "Deutsche Name"
+  p.save
+  
+  # Model can't be created in non-base language.
+  p = Product.new(:name => "Ukrainian name but it will be saved as english")
+  p.language # => :en
+  p.save
+  
+  p = Product.find :first, :language => :de
+  p.language # => :de
+  p.name # => "Stul"
+  p.save
+
+  sections:
+  
+  |id|name     |
+  |1 |Furniture|
+  |2 |Food     |
+
+  translation_sections:
+
+  |id|model_id|language|name  |
+  |1 |1       |de      |Moebel|
+  |2 |2       |de      |Essen |
+  
+  products:
+
+  |id|section_id|name  |
+  |1 |1         |Chair |
+  |2 |1         |Table |
+  |3 |2         |Orange|
+  |4 |2         |Apple |
+
+  translation_products:
+
+  |id|model_id|language|name     |
+  |1 |1       |de      |Stuhl    |
+  |2 |2       |de      |Tisch    |
+  |3 |3       |de      |Apfelsine|
+  |4 |4       |de      |Apfel    |
+
+  p = Product.find 1, :include => :section
+  p.section.name
+  p.name
+
+  TranslationLanguage.current = :de
+
+  p = Product.find 1, :include => :section
+  p.section.name
+  p.name
+
+  p.save
+
+  TranslationLanguage.current = :de
+  
+== Integration with Ruby-Gettext
+
+  app/controllers/application.rb
+
+    init_gettext "myapp"
+
+    after_init_gettext :set_model_translation_language
+    
+    def :set_model_translation_language
+      TranslationLanguage.current = Locale.current.language
+    end  

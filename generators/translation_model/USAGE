@@ -1,0 +1,11 @@
+Description:
+    The model generator creates translation model for model with acts_as_translatable.
+
+Example:
+    ./script/generate translation_model ProductTranslation
+
+    This will create an ProductTranslation model:
+        Model:      app/models/product_translation.rb
+        Test:       test/unit/product_translation_test.rb
+        Fixtures:   test/fixtures/product_translation.yml
+        Migration:  db/migrate/XXX_add_product_translations.rb 
