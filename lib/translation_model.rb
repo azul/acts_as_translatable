@@ -1,6 +1,5 @@
 class TranslationModel < ActiveRecord::Base
 
-  include Reloadable::Subclasses
   self.abstract_class = true
 
   @@enabled  = true

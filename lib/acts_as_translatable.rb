@@ -36,7 +36,10 @@ module ActiveRecord
           rescue
             raise "TranslationModel '#{from}' does not exists"
           end
-          translation.ensure_columns(options[:attributes])
+          # in our tests the db does not exist at the time of this definition...
+          #(options[:attributes]).each do |column|
+          #  raise "#{from} does not have the #{column} column." unless translation.column_names.include? column
+          #end
           select = []
           column_names.each do |column|
             if options[:attributes].include?(column.intern)

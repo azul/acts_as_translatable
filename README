@@ -24,12 +24,12 @@ database must support this if you want you this.
 
   # models
   class Product < ActiveRecord::Base
-    acts_as_translatable :fields => [:name, :description]
+    acts_as_translatable :attributes => [:name, :description]
     belongs :section
   end
 
   class Section < ActiveRecord::Base
-    acts_as_translatable :fields => [:name]
+    acts_as_translatable :attributes => [:name]
     has_many :products
   end
   
