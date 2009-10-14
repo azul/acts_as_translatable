@@ -41,12 +41,9 @@ module ActiveRecord
           #  raise "#{from} does not have the #{column} column." unless translation.column_names.include? column
           #end
           select = []
-          column_names.each do |column|
-            if options[:attributes].include?(column.intern)
+          select << "#{table_name}.*"
+          options[:attributes].each do |column|
               select << "COALESCE(#{translation.table_name}.#{column}, #{table_name}.#{column}) AS #{column}"
-            else
-              select << "#{table_name}.#{column} AS #{column}"
-            end
           end
           select = select.join(", ")
           joins = " LEFT JOIN #{translation.table_name} ON" +
